@@ -1,10 +1,14 @@
 const app = require("./app");
-const MongoDatabase = require("./app/DAL/db");
+const mongoose = require("mongoose");
+require("dotenv").config();
 
 const run = async () => {
   try {
-    const port = process.env.PORT || "3001";
-    await MongoDatabase.instance().connect();
+    const port = process.env.PORT || 3001;
+    await mongoose.connect(
+      // fix the url
+      process.env.DB_URL || "mongodb://localhost:27017/"
+    );
     app.listen(port, () => console.log(`Listening on port: ${port}`));
   } catch (err) {
     console.log(`FAILED TO START: ${err}`);
@@ -14,6 +18,6 @@ const run = async () => {
 run();
 
 process.on("SIGINT", async () => {
-  await MongoDatabase.instance().disconnect();
+  await mongoose.connection.close();
   process.exit(0);
 });
