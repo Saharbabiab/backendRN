@@ -1,15 +1,16 @@
-const bodyParser = require("body-parser");
-const express = require("express");
-const cors = require("cors");
-const productsRouter = require("./routes/product");
-const usersRouter = require("./routes/user");
-const orderRouter = require("./routes/order");
+import pkg from "body-parser";
+const { json } = pkg;
+import cors from "cors";
+import express from "express";
+import productsRouter from "./routes/product.js";
+import usersRouter from "./routes/user.js";
+import orderRouter from "./routes/order.js";
 
 const app = express();
-app.use(bodyParser.json());
+app.use(json());
 app.use(cors());
 app.use("/api/products", productsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/orders", orderRouter);
 
-module.exports = app;
+export default app;

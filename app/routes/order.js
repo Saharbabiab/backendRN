@@ -1,11 +1,19 @@
-const order = require("../controllers/order");
-const router = require("express").Router();
-const cacheNoStore = require("../middlewares/cacheNoStore");
+import {
+  create,
+  getById,
+  updateOrderHandler,
+  deleteOrderHandler,
+  amountOfOrdersHandler,
+} from "../controllers/order.js";
+import express from "express";
+import cacheNoStore from "../middlewares/cacheNoStore.js";
 
-router.post("/create", cacheNoStore, order.create);
-router.get("/getOrderById/:id", cacheNoStore, order.getById);
-router.put("/updateOrder/:id", cacheNoStore, order.updateOrder);
-router.delete("/deleteOrder/:id", cacheNoStore, order.deleteOrder);
-router.get("/amountOfOrders", cacheNoStore, order.amountOfOrders);
+const router = express.Router();
 
-module.exports = router;
+router.post("/create", cacheNoStore, create);
+router.get("/getOrderById/:id", cacheNoStore, getById);
+router.put("/updateOrder/:id", cacheNoStore, updateOrderHandler);
+router.delete("/deleteOrder/:id", cacheNoStore, deleteOrderHandler);
+router.get("/amountOfOrders", cacheNoStore, amountOfOrdersHandler);
+
+export default router;

@@ -1,18 +1,29 @@
-const product = require("../controllers/product");
-const router = require("express").Router();
-const cacheNoStore = require("../middlewares/cacheNoStore");
+import {
+  create,
+  getAllByPageAndSort,
+  getById,
+  editProduct,
+  deletedProduct,
+  updateQuantity,
+  totalProducts,
+  top3Products,
+} from "../controllers/product.js";
+import express from "express";
+import cacheNoStore from "../middlewares/cacheNoStore.js";
 
-router.post("/create", cacheNoStore, product.create);
+const router = express.Router();
+
+router.post("/create", cacheNoStore, create);
 router.get(
   "/getProductsByPageAndSort/:pageN/:sortBy",
   cacheNoStore,
-  product.getAllByPageAndSort
+  getAllByPageAndSort
 );
-router.get("/getById/:id", cacheNoStore, product.getById);
-router.put("/editProduct/:id", cacheNoStore, product.editProduct);
-router.delete("/deleteProduct/:id", cacheNoStore, product.deleteProduct);
-router.put("/updateProductQuantity/:id", cacheNoStore, product.updateQuantity);
-router.get("/getTotalProducts", cacheNoStore, product.totalProducts);
-router.get("/top3BestSelling", cacheNoStore, product.top3Products);
+router.get("/getById/:id", cacheNoStore, getById);
+router.put("/editProduct/:id", cacheNoStore, editProduct);
+router.delete("/deletedProduct/:id", cacheNoStore, deletedProduct);
+router.put("/updateProductQuantity/:id", cacheNoStore, updateQuantity);
+router.get("/getTotalProducts", cacheNoStore, totalProducts);
+router.get("/top3BestSelling", cacheNoStore, top3Products);
 
-module.exports = router;
+export default router;

@@ -1,162 +1,116 @@
-const Product = require("../models/product");
-module.exports = {
-  createProduct: async (product) => {
-    if (
-      !product.name ||
-      product.price == NaN ||
-      !product.description ||
-      !product.img ||
-      product.inStock == NaN
-    ) {
-      return "missing required fields";
-    }
-    const newProduct = new Product({
-      name: product.name,
-      price: product.price,
-      description: product.description,
-      img: product.img,
-      inStock: product.inStock,
-    });
-    return newProduct.save();
-  },
-  getPrice: async (id) => {
-    const product = await Product.findById(id);
-    if (!product) {
-      return "Product not found";
-    }
-    return product.price;
-  },
+import Product from "../models/product.js";
+import { ObjectId } from "mongodb";
 
-  getProductById: async (id) => {
-    return Product.findById(id);
-  },
-  updateProduct: async (id, product) => {
-    return Product.findByIdAndUpdate(
-      id,
-      { ...product, updatedAt: Date.now() },
-      { new: true }
-    );
-  },
-  deleteProduct: async (id) => {
-    return Product.findByIdAndDelete(id);
-  },
-  enoughToSupply: async (id, quantity) => {
-    const product = await Product.findById(id);
-    if (!product) {
-      return "Product not found";
-    } else if (product.inStock < quantity) {
+export async function createProduct(P) {
+  const newProduct = new Product({
+    name: P.name,
+    img: P.img,
+    description: P.description,
+    price: P.price,
+    inStock: P.inStock,
+  });
+  return newProduct.save();
+}
+
+// Remove the duplicate function definition
+
+export async function getPrice(id) {
+  const product = await Product.findById(id);
+  return product.price;
+}
+
+export async function getProductsByPage(page) {
+  return Product.find()
+    .skip((page - 1) * 10)
+    .limit(10);
+}
+
+export async function getProductById(id) {
+  return Product.findById(id);
+}
+
+export async function updateProduct(id, P) {
+  const product = await Product.findById(id);
+  if (product) {
+    product.name = P.name;
+    product.img = P.img;
+    product.description = P.description;
+    product.price = P.price;
+    product.inStock = P.inStock;
+    product.updatedAt = new Date();
+    return product.save();
+  }
+  return "Product not found";
+}
+
+export async function deleteProduct(id) {
+  return Product.findByIdAndDelete(id);
+}
+
+export async function updateProductQuantity(id, qty) {
+  const product = await Product.findById(id);
+  if (product) {
+    product.inStock = qty;
+    return product.save();
+  }
+  return "Product not found";
+}
+
+export async function amountOfProducts() {
+  return Product.countDocuments();
+}
+
+export async function getProductsByPageAndSort(page, sort) {
+  return Product.find()
+    .sort(sort)
+    .skip((page - 1) * 10)
+    .limit(10);
+}
+
+export async function enoughToSupply(order) {
+  for (const item of order.items) {
+    const product = await Product.findById(item.productId);
+    if (product.inStock < item.qty) {
       return false;
     }
-    return true;
-  },
-  updateProductQuantity: async (id, quantity) => {
-    const product = await Product.findById(id);
-    if (!product) {
-      return "Product not found";
-    }
-    product.inStock -= quantity;
-    return product.save();
-  },
-  amountOfProducts: async () => {
-    return Product.countDocuments();
-  },
-  getProductsByPageAndSort: async (pageN, sortBy) => {
-    return Product.find()
-      .sort(sortBy)
-      .skip((pageN - 1) * 6)
-      .limit(6);
-  },
-  getProductsByPage: async (pageN) => {
-    return Product.find()
-      .skip((pageN - 1) * 6)
-      .limit(6);
-  },
-  bestSellingByPage: async (pageN) => {
-    return Product.aggregate([
-      // להביא את כל המוצרים
-      {
-        $lookup: {
-          from: "products",
-          localField: "_id",
-          foreignField: "_id",
-          as: "product",
+  }
+  return true;
+}
+
+export async function bestSellingByPage(page) {
+  return [
+    {
+      $lookup: {
+        from: "orders",
+        localField: "_id",
+        foreignField: "products.productId",
+        as: "order",
+      },
+    },
+    {
+      $unwind: "$order",
+    },
+    {
+      $unwind: "$order.products",
+    },
+    {
+      $group: {
+        _id: "$_id",
+        total: {
+          $sum: "$order.products.quantity",
         },
       },
-      // להפריד את המוצרים למוצרים נפרדים
-      {
-        $unwind: "$product",
+    },
+    {
+      $sort: {
+        total: -1,
       },
-      // לחשב את כמות המוצרים שנמכרה לכל מוצר
-      {
-        $lookup: {
-          from: "orders",
-          let: {
-            productId: "$_id",
-          },
-          pipeline: [
-            {
-              $unwind: "$items",
-            },
-            {
-              $match: {
-                $expr: {
-                  $eq: ["$items.productId", "$$productId"],
-                },
-              },
-            },
-            {
-              $group: {
-                _id: null,
-                total: {
-                  $sum: "$items.qty",
-                },
-              },
-            },
-          ],
-          as: "sales",
-        },
-      },
-      // להציג את המוצרים עם כמות המוצרים שנמכרה
-      {
-        $project: {
-          _id: "$product._id",
-          name: "$product.name",
-          img: "$product.img",
-          description: "$product.description",
-          price: "$product.price",
-          inStock: "$product.inStock",
-          createdAt: "$product.createdAt",
-          updatedAt: "$product.updatedAt",
-          total: {
-            $ifNull: [
-              {
-                $arrayElemAt: ["$sales.total", 0],
-              },
-              0,
-            ],
-          },
-        },
-      },
-      // לסדר את המוצרים לפי כמות המוצרים שנמכרה בסדר יורד
-      {
-        $sort: {
-          total: -1,
-        },
-      },
-      {
-        $skip:
-          /**
-           * Provide the number of documents to skip.
-           */
-          (pageN - 1) * 6,
-      },
-      {
-        $limit:
-          /**
-           * Provide the number of documents to limit.
-           */
-          6,
-      },
-    ]);
-  },
-};
+    },
+    {
+      $skip: (page - 1) * 10,
+    },
+    {
+      $limit: 10,
+    },
+  ];
+}
