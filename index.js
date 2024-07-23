@@ -9,14 +9,8 @@ const { connect, connection } = mongoose;
 const run = async () => {
   try {
     const port = process.env.PORT || 3001;
-    const dbUrl =
-      process.env.DB_URL ||
-      "mongodb+srv://<username>:<password>@<your-cluster-url>/test?retryWrites=true&w=majority";
-
-    await connect(dbUrl, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const dbUrl = process.env.DB_URL;
+    await connect(dbUrl);
 
     console.log("Connected to MongoDB");
 
