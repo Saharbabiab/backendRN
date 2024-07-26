@@ -49,6 +49,9 @@ export async function addOrder(userId, orderId) {
   }
   return "User not found";
 }
+export async function getAllUsers() {
+  return User.find();
+}
 export async function addToCart(userId, productId, qty) {
   const user = await User.findById(userId);
   if (user) {

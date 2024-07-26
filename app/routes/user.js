@@ -1,7 +1,7 @@
 import {
   signup,
   userLogin,
-  addToCart,
+  addToCartH,
   removeFromCart,
   updateUserCart,
   addUserOrder,
@@ -9,24 +9,17 @@ import {
   updateUserName,
   updateUserPw,
   TopBuyer,
+  getAllUsersH,
 } from "../controllers/user.js";
 import express from "express";
 import cacheNoStore from "../middlewares/cacheNoStore.js";
 
 const router = express.Router();
 
+router.get("/all", cacheNoStore, getAllUsersH);
 router.post("/signup", cacheNoStore, signup);
-/*
-postman signup test
-post http://localhost:3000/api/users/signup
-{
-    "username": "test",
-    "password": "test",
-    "name": "test"
-}
-*/
 router.post("/login", cacheNoStore, userLogin);
-router.post("/addToCart/:productId", cacheNoStore, addToCart);
+router.post("/addToCart/:productId", cacheNoStore, addToCartH);
 router.delete("/removeFromCart/:productId", cacheNoStore, removeFromCart);
 router.put("/updateCart", cacheNoStore, updateUserCart);
 router.put("/addOrder/:orderId", cacheNoStore, addUserOrder);

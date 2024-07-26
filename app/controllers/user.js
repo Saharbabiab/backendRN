@@ -7,6 +7,8 @@ import {
   getOrdersByIdAndDates,
   updateName,
   getTopBuyer,
+  getAllUsers,
+  addToCart,
 } from "../services/user.js";
 
 export async function signup(req, res) {
@@ -27,7 +29,15 @@ export async function userLogin(req, res) {
     res.status(500).json(err);
   }
 }
-export async function addToCart(req, res) {
+export async function getAllUsersH(req, res) {
+  try {
+    const users = await getAllUsers();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+}
+export async function addToCartH(req, res) {
   try {
     const userId = req.body.userId;
     const qty = req.body.qty;
