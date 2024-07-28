@@ -12,6 +12,9 @@ export async function createProduct(P) {
   return newProduct.save();
 }
 
+export async function getAllProducts() {
+  return Product.find();
+}
 // Remove the duplicate function definition
 
 export async function getPrice(id) {

@@ -8,6 +8,7 @@ import {
   amountOfProducts,
   getProductsByPageAndSort,
   bestSellingByPage,
+  getAllProducts,
 } from "../services/product.js";
 
 import { top3BestSelling } from "../services/order.js";
@@ -61,7 +62,20 @@ export async function getAllByPageAndSort(req, res) {
   }
 }
 
+export async function getProducts(req, res) {
+  try {
+    const products = await getAllProducts();
+    if (!products || products.length === 0) {
+      return res.status(404).json("No products found");
+    }
+    res.json(products);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+}
+
 export async function deletedProduct(req, res) {
+  console.log("delete");
   try {
     const id = req.params.id;
     const deletedProduct = await deleteProduct(id);

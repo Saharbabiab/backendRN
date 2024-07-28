@@ -13,7 +13,8 @@ import {
 
 export async function signup(req, res) {
   try {
-    const { username, password, name } = req.body;
+    console.log(req.body);
+    const { username, name, password } = req.body;
     const newUser = await createUser({ username, password, name });
     res.json(newUser);
   } catch (err) {
