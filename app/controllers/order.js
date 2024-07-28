@@ -16,19 +16,24 @@ export async function create(req, res) {
   try {
     const order = req.body;
     const items = order.items;
-    let promiseArr = items.map((i) => enoughToSupply(i.productId, i.qty));
-    const enough = await Promise.all(promiseArr);
-    if (enough.includes(false)) {
+    let promiseArr = true;
+    for (let i of items) {
+      promiseArr = promiseArr && enoughToSupply(i.productId, i.qty);
+    }
+    if (!promiseArr) {
       return res.status(400).json("Not enough in stock");
     }
-    promiseArr = items.map((i) => updateProductQuantity(i.productId, i.qty));
-    await Promise.all(promiseArr);
+    for (let i of items) {
+      await updateProductQuantity(i.productId, i.qty);
+    }
     const newOrder = await createOrder({
+      userId: order.userId,
       items: order.items,
       totalPrice: order.totalPrice,
     });
     res.json(newOrder);
   } catch (err) {
+    console.log(err);
     res.status(500).json(err);
   }
 }

@@ -1,12 +1,15 @@
 import Order from "../models/order.js";
 import Product from "../models/product.js";
 import { getPrice } from "./product.js";
+import { addOrder } from "../services/user.js";
 
 export async function createOrder(order) {
+  console.log("create order");
   const newOrder = new Order({
     items: order.items,
     totalPrice: order.totalPrice,
   });
+  addOrder(order.userId, newOrder._id);
   return newOrder.save();
 }
 export async function getOrderById(id) {

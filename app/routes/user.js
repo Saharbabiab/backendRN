@@ -2,14 +2,15 @@ import {
   signup,
   userLogin,
   addToCartH,
-  removeFromCart,
+  removeFromCartH,
   updateUserCart,
-  addUserOrder,
+  addUserOrderH,
   fetchOrdersByIdAndDates,
   updateUserName,
-  updateUserPw,
+  updateUserPwH,
   TopBuyer,
   getAllUsersH,
+  getCartH,
 } from "../controllers/user.js";
 import express from "express";
 import cacheNoStore from "../middlewares/cacheNoStore.js";
@@ -20,16 +21,17 @@ router.get("/all", cacheNoStore, getAllUsersH);
 router.post("/signup", cacheNoStore, signup);
 router.post("/login", cacheNoStore, userLogin);
 router.post("/addToCart/:productId", cacheNoStore, addToCartH);
-router.delete("/removeFromCart/:productId", cacheNoStore, removeFromCart);
+router.delete("/removeFromCart/:productId", cacheNoStore, removeFromCartH);
 router.put("/updateCart", cacheNoStore, updateUserCart);
-router.put("/addOrder/:orderId", cacheNoStore, addUserOrder);
+router.put("/addOrder/:orderId", cacheNoStore, addUserOrderH);
 router.get(
   "/getOrdersByIdAndDates/:userId/:start/:end",
   cacheNoStore,
   fetchOrdersByIdAndDates
 );
 router.put("/updateName", cacheNoStore, updateUserName);
-router.put("/updatePassword", cacheNoStore, updateUserPw);
+router.put("/updatePassword", cacheNoStore, updateUserPwH);
 router.get("/getTopBuyer", cacheNoStore, TopBuyer);
+router.get("/getCart/:userId", cacheNoStore, getCartH);
 
 export default router;

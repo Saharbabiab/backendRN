@@ -9,6 +9,9 @@ import {
   getTopBuyer,
   getAllUsers,
   addToCart,
+  getCart,
+  removeFromCart,
+  updateUserPw,
 } from "../services/user.js";
 
 export async function signup(req, res) {
@@ -39,6 +42,7 @@ export async function getAllUsersH(req, res) {
   }
 }
 export async function addToCartH(req, res) {
+  console.log("add to cart");
   try {
     const userId = req.body.userId;
     const qty = req.body.qty;
@@ -50,7 +54,7 @@ export async function addToCartH(req, res) {
     res.status(500).json(err);
   }
 }
-export async function removeFromCart(req, res) {
+export async function removeFromCartH(req, res) {
   try {
     const userId = req.body.userId;
     const productId = req.params.productId;
@@ -70,12 +74,12 @@ export async function updateUserCart(req, res) {
     res.status(500).json(err);
   }
 }
-export async function addUserOrder(req, res) {
+export async function addUserOrderH(req, res) {
   try {
     const userId = req.body.userId;
     const orderId = req.params.orderId;
     console.log(userId, orderId);
-    const updatedUser = await addUserOrder(userId, orderId);
+    const updatedUser = await addOrder(userId, orderId);
     res.json(updatedUser);
   } catch (err) {
     res.status(500).json(err);
@@ -102,7 +106,7 @@ export async function updateUserName(req, res) {
     res.status(500).json(err);
   }
 }
-export async function updateUserPw(req, res) {
+export async function updateUserPwH(req, res) {
   try {
     const userId = req.body.userId;
     const oldPw = req.body.oldPw;
@@ -117,6 +121,16 @@ export async function TopBuyer(req, res) {
   try {
     const topBuyer = await getTopBuyer();
     res.json(topBuyer);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+}
+
+export async function getCartH(req, res) {
+  try {
+    const userId = req.params.userId;
+    const cart = await getCart(userId);
+    res.json(cart);
   } catch (err) {
     res.status(500).json(err);
   }

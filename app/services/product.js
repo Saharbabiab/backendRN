@@ -53,7 +53,7 @@ export async function deleteProduct(id) {
 export async function updateProductQuantity(id, qty) {
   const product = await Product.findById(id);
   if (product) {
-    product.inStock = qty;
+    product.inStock = product.inStock - qty;
     return product.save();
   }
   return "Product not found";
@@ -70,13 +70,12 @@ export async function getProductsByPageAndSort(page, sort) {
     .limit(10);
 }
 
-export async function enoughToSupply(order) {
-  for (const item of order.items) {
-    const product = await Product.findById(item.productId);
-    if (product.inStock < item.qty) {
-      return false;
-    }
+export async function enoughToSupply(productId, qty) {
+  const product = await Product.findById(productId);
+  if (product.inStock < qty) {
+    return false;
   }
+
   return true;
 }
 

@@ -12,7 +12,10 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Product",
       },
+      name: String,
+      price: Number,
       qty: Number,
+      img: String,
     },
   ],
   orders: [

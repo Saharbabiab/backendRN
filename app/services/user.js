@@ -2,7 +2,9 @@ import User from "../models/user.js";
 import { hash, compare } from "bcrypt";
 import { getOrderById } from "./order.js";
 import { ObjectId } from "mongodb";
-import { enoughToSupply } from "./product.js";
+import { getProductById } from "./product.js";
+import { get } from "mongoose";
+import e from "cors";
 
 export async function createUser(user) {
   console.log(user);
@@ -53,37 +55,64 @@ export async function getAllUsers() {
   return User.find();
 }
 export async function addToCart(userId, productId, qty) {
-  const user = await User.findById(userId);
-  if (user) {
-    if (user.cart.some((item) => item.productId == productId)) {
-      for (const item of user.cart) {
-        if (item.productId == productId) {
-          if (await enoughToSupply(item.productId, item.qty + qty)) {
-            item.qty += qty;
-          } else return "Not enough in stock";
-        }
-      }
-    } else {
-      if (await enoughToSupply(productId, qty)) {
-        user.cart.push({ productId: productId, qty: qty });
-      } else return "Not enough in stock";
+  try {
+    console.log(userId, productId, qty);
+    const user = await User.findById(userId);
+    const product = await getProductById(productId);
+
+    if (!user) {
+      return "User not found";
     }
-    const updatedUser = await user.save();
-    return updatedUser;
+
+    if (!product) {
+      return "Product not found";
+    }
+
+    if (product.inStock < qty) {
+      return "Not enough in stock";
+    } else {
+      let fix = false;
+      user.cart.map((item) => {
+        if (item.productId == productId) {
+          fix = true;
+          if (item.qty + qty <= product.inStock) {
+            item.qty += qty;
+            user.save();
+          } else {
+            return "Not enough in stock";
+          }
+        }
+      });
+      if (!fix) {
+        if (qty <= product.inStock) {
+          user.cart.push({
+            productId: productId,
+            name: product.name,
+            price: product.price,
+            qty: qty,
+            img: product.img,
+          });
+        } else {
+          return "Not enough in stock";
+        }
+        return user.save();
+      }
+    }
+  } catch (error) {
+    console.error("Error adding to cart:", error);
+    return "An error occurred while adding to cart";
   }
-  return "User not found";
 }
 export async function removeFromCart(userId, prodId) {
   const user = await User.findById(userId);
+  console.log(prodId);
+  console.log(user.cart);
   if (user) {
-    if (user.cart.some((item) => item.productId == prodId)) {
-      user.cart = user.cart.filter((item) => item.productId != prodId);
-      const updatedUser = await user.save();
-      return updatedUser;
-    }
-    return "Product not found in cart";
+    const tempcart = user.cart.filter((item) => item._id != prodId);
+    user.cart = tempcart;
+    console.log(tempcart);
+    return user.save();
   }
-  return "User not found";
 }
 export async function getOrdersByIdAndDates(userId, start, end) {
   try {
@@ -286,4 +315,9 @@ export async function updatePassword(id, password) {
   const user = await User.findById(id);
   user.password = await hash(`${password}${process.env.SECRET_KEY}`, 10);
   return user.save();
+}
+
+export async function getCart(userId) {
+  const user = await User.findById(userId);
+  return user.cart;
 }
